@@ -1,0 +1,47 @@
+# version: "3.9"
+
+name: pythonfile
+
+services:
+  neo4j:
+    image: neo4j:5.26.1
+    environment:
+      NEO4J_AUTH: neo4j/password
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+
+  ingest:
+    build:
+      context: .
+      dockerfile: ingest/Dockerfile
+    depends_on:
+      - neo4j
+    environment:
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: password
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    depends_on:
+      - neo4j
+      - ingest
+    ports:
+      - "8000:8000"
+    environment:
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: password
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - api
+    ports:
+      - "3000:80"
+

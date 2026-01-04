@@ -1,0 +1,32 @@
+teams:
+  - name: platform-team
+    lead: "@alice"
+    owns:
+      - api-gateway
+      - notification-service
+      - redis-main
+
+  - name: identity-team
+    lead: "@bob"
+    owns:
+      - auth-service
+      - users-db
+
+  - name: orders-team
+    lead: "@dave"
+    owns:
+      - order-service
+      - inventory-service
+      - orders-db
+      - inventory-db
+
+  - name: payments-team
+    lead: "@frank"
+    owns:
+      - payment-service
+      - payments-db
+
+  - name: ml-team
+    lead: "@grace"
+    owns:
+      - recommendation-service

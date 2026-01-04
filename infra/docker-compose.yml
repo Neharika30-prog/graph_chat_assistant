@@ -1,0 +1,147 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build: ./services/api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - ORDER_SERVICE_URL=http://order-service:8082
+      - PAYMENT_SERVICE_URL=http://payment-service:8083
+      - RECOMMENDATION_SERVICE_URL=http://recommendation-service:8086
+    depends_on:
+      - auth-service
+      - order-service
+      - payment-service
+    labels:
+      team: platform-team
+      oncall: "@alice"
+
+  auth-service:
+    build: ./services/auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=postgresql://postgres:secret@users-db:5432/users
+      - REDIS_URL=redis://redis-main:6379
+    depends_on:
+      - users-db
+      - redis-main
+    labels:
+      team: identity-team
+      oncall: "@bob"
+
+  order-service:
+    build: ./services/order-service
+    ports:
+      - "8082:8082"
+    environment:
+      - DATABASE_URL=postgresql://postgres:secret@orders-db:5432/orders
+      - PAYMENT_SERVICE_URL=http://payment-service:8083
+      - INVENTORY_SERVICE_URL=http://inventory-service:8084
+      - NOTIFICATION_SERVICE_URL=http://notification-service:8085
+    depends_on:
+      - orders-db
+      - payment-service
+      - inventory-service
+    labels:
+      team: orders-team
+      oncall: "@dave"
+
+  payment-service:
+    build: ./services/payment-service
+    ports:
+      - "8083:8083"
+    environment:
+      - DATABASE_URL=postgresql://postgres:secret@payments-db:5432/payments
+      - NOTIFICATION_SERVICE_URL=http://notification-service:8085
+    depends_on:
+      - payments-db
+    labels:
+      team: payments-team
+      oncall: "@frank"
+      pci_compliant: "true"
+
+  inventory-service:
+    build: ./services/inventory-service
+    ports:
+      - "8084:8084"
+    environment:
+      - DATABASE_URL=postgresql://postgres:secret@inventory-db:5432/inventory
+      - REDIS_URL=redis://redis-main:6379
+    depends_on:
+      - inventory-db
+      - redis-main
+    labels:
+      team: orders-team
+      oncall: "@eve"
+
+  notification-service:
+    build: ./services/notification-service
+    ports:
+      - "8085:8085"
+    environment:
+      - REDIS_URL=redis://redis-main:6379
+    depends_on:
+      - redis-main
+    labels:
+      team: platform-team
+      oncall: "@alice"
+
+  recommendation-service:
+    build: ./services/recommendation-service
+    ports:
+      - "8086:8086"
+    environment:
+      - REDIS_URL=redis://redis-main:6379
+    depends_on:
+      - redis-main
+    labels:
+      team: ml-team
+      oncall: "@grace"
+
+  users-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=users
+      - POSTGRES_PASSWORD=secret
+    labels:
+      team: identity-team
+      type: database
+
+  orders-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=orders
+      - POSTGRES_PASSWORD=secret
+    labels:
+      team: orders-team
+      type: database
+
+  payments-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=payments
+      - POSTGRES_PASSWORD=secret
+    labels:
+      team: payments-team
+      type: database
+      encrypted: "true"
+
+  inventory-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=inventory
+      - POSTGRES_PASSWORD=secret
+    labels:
+      team: orders-team
+      type: database
+
+  redis-main:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    labels:
+      team: platform-team
+      type: cache
