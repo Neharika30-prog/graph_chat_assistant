@@ -1,14 +1,12 @@
-Graph Chat Assistant
+# Graph Chat Assistant
 
 An end-to-end system that parses infrastructure configuration files (Docker Compose, Teams, Kubernetes), builds a unified dependency graph in Neo4j, and exposes a natural language chat interface to query ownership, dependencies, blast radius, and paths between services.
 
 1. Setup & Usage
-Prerequisites
 
+Prerequisites:
 Docker & Docker Compose
-
 Node.js (only if running frontend locally)
-
 (Optional) Ollama installed for local LLM inference
 
 How to Start
@@ -226,5 +224,6 @@ Link-
 ├── frontend/
 ├── infra/
 └── README.md
+
 
 
